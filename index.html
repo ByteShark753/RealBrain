@@ -61,78 +61,39 @@
             100% { background-position: 0% 50%; }
         }
         
-        .ai-interface {
+        .matrix-container {
             position: relative;
             margin: 80px auto;
             max-width: 800px;
-            padding: 40px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            height: 300px;
+            background: #000;
+            overflow: hidden;
         }
         
-        .matrix-connection {
+        .pixel {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #0f0;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: fade 2s infinite alternate;
+        }
+        
+        @keyframes fade {
+            0% { opacity: 0.1; }
+            100% { opacity: 0.8; }
+        }
+        
+        .pixel-grid {
             position: absolute;
             width: 100%;
-            height: 20px;
-            background: linear-gradient(90deg, 
-                rgba(0,255,0,0.2) 0%, 
-                rgba(0,255,255,0.4) 50%, 
-                rgba(0,255,0,0.2) 100%);
-            top: -20px;
-            left: 0;
-            z-index: 1;
-        }
-        
-        .ai-input-container {
-            display: flex;
-            gap: 10px;
-            margin-top: 30px;
-        }
-        
-        .ai-input {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
-            transition: all 0.3s;
-            background: #fff;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .ai-input:focus {
-            border-color: #000;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
-        }
-        
-        .ai-submit {
-            padding: 15px 30px;
-            background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
-            background-size: 400% 400%;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            animation: rainbow 8s ease infinite;
-            transition: transform 0.3s;
-        }
-        
-        .ai-submit:hover {
-            transform: translateY(-2px);
-        }
-        
-        .ai-response {
-            margin-top: 30px;
-            padding: 20px;
-            background: #fff;
-            border-radius: 4px;
-            border-left: 4px solid #000;
-            min-height: 100px;
-            white-space: pre-wrap;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(0,255,0,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,0,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
         }
         
         .services {
@@ -209,22 +170,6 @@
             border-radius: 8px;
             border-left: 4px solid #4682b4;
         }
-
-        /* Анимация загрузки */
-        .loader {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #000;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-            display: none;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
@@ -238,20 +183,9 @@
             <p>Передовые решения в области искусственного интеллекта</p>
         </header>
         
-        <div class="ai-interface">
-            <div class="matrix-connection"></div>
-            <h2>AI-ассистент RealBrain</h2>
-            <p>Задайте любой вопрос нашей ИИ-модели и получите профессиональный ответ</p>
-            
-            <div class="ai-input-container">
-                <input type="text" class="ai-input" placeholder="Введите ваш запрос..." id="user-input">
-                <button class="ai-submit" id="ai-submit">Отправить</button>
-            </div>
-            
-            <div class="loader" id="loader"></div>
-            <div class="ai-response" id="ai-response">
-                Ответ ИИ появится здесь...
-            </div>
+        <div class="matrix-container" id="matrix">
+            <div class="pixel-grid"></div>
+            <!-- Пиксели будут добавлены через JavaScript -->
         </div>
         
         <div class="services">
@@ -289,61 +223,75 @@
     </div>
     
     <footer>
-        <p>© 2024 RealBrain. Все права защищены.</p>
+        <p>© 2025 RealBrain. Все права защищены.</p>
         <p>Контакты для связи: @inc0gn1tr0</p>
     </footer>
 
     <script>
-        document.getElementById('ai-submit').addEventListener('click', async function() {
-            const input = document.getElementById('user-input').value;
-            const responseElement = document.getElementById('ai-response');
-            const loader = document.getElementById('loader');
+        // Создаем матрицу из пикселей
+        const matrix = document.getElementById('matrix');
+        const matrixRect = matrix.getBoundingClientRect();
+        const cols = Math.floor(matrixRect.width / 12);
+        const rows = Math.floor(matrixRect.height / 12);
+        
+        // Создаем пиксели
+        for (let i = 0; i < cols * rows / 3; i++) {
+            const pixel = document.createElement('div');
+            pixel.className = 'pixel';
             
-            if (!input.trim()) {
-                responseElement.textContent = 'Пожалуйста, введите ваш запрос';
-                return;
-            }
+            // Случайная позиция
+            const left = Math.random() * 100;
+            const top = Math.random() * 100;
             
-            responseElement.textContent = '';
-            loader.style.display = 'block';
+            pixel.style.left = `${left}%`;
+            pixel.style.top = `${top}%`;
             
-            try {
-                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer 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', // Замените на ваш ключ
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: "microsoft/mai-ds-r1:free",
-                        messages: [
-                            { role: "user", content: input }
-                        ]
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Ошибка API: ${response.status}`);
+            // Случайная задержка анимации
+            pixel.style.animationDelay = `${Math.random() * 2}s`;
+            
+            // Случайный размер
+            const size = 4 + Math.random() * 6;
+            pixel.style.width = `${size}px`;
+            pixel.style.height = `${size}px`;
+            
+            // Случайный оттенок зеленого
+            const greenValue = 100 + Math.floor(Math.random() * 155);
+            pixel.style.backgroundColor = `rgb(0, ${greenValue}, 0)`;
+            
+            matrix.appendChild(pixel);
+            
+            // Анимация движения
+            animatePixel(pixel);
+        }
+        
+        function animatePixel(pixel) {
+            const duration = 3 + Math.random() * 7;
+            const delay = Math.random() * 5;
+            
+            // Случайное движение
+            const keyframes = [
+                { 
+                    transform: `translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px)`,
+                    opacity: 0.1
+                },
+                { 
+                    transform: `translate(${Math.random() * 40 - 20}px, ${Math.random() * 40 - 20}px)`,
+                    opacity: 0.7
+                },
+                { 
+                    transform: `translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px)`,
+                    opacity: 0.3
                 }
-
-                const data = await response.json();
-                const aiResponse = data.choices[0].message.content;
-                
-                responseElement.textContent = aiResponse;
-            } catch (error) {
-                console.error('Ошибка:', error);
-                responseElement.textContent = 'Произошла ошибка при обработке запроса. Пожалуйста, попробуйте позже.';
-            } finally {
-                loader.style.display = 'none';
-            }
-        });
-
-        // Отправка по нажатию Enter
-        document.getElementById('user-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('ai-submit').click();
-            }
-        });
+            ];
+            
+            pixel.animate(keyframes, {
+                duration: duration * 1000,
+                delay: delay * 1000,
+                iterations: Infinity,
+                direction: 'alternate',
+                easing: 'ease-in-out'
+            });
+        }
     </script>
 </body>
 </html>
